@@ -489,7 +489,7 @@ Rules:
 
     } catch(err) {
       removeTyping();
-      if (err.name!=="AbortError") addBubble("ai",`Something went wrong: ${esc(err.message)}`);
+      if (err.name!=="AbortError") addBubble("ai",`Something went wrong: ${esc(err.message)} — status: ${res?.status}`);
     } finally {
       isStreaming=false; sendBtn.disabled=false;
       stopBtn.style.display="none"; retryBtn.style.display="inline-block";
@@ -624,4 +624,5 @@ Rules:
 </script>
 </body>
 </html>
+
 
