@@ -285,8 +285,8 @@ textarea::placeholder { color: var(--faint); }
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
 
-  const API_KEY = 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";
-  const MODEL   = "mistralai/mistral-7b-instruct:free";
+  const API_KEY = "AIzaSyBvpq-rIhWmJ3ehFKRHWEd3Q6N6JNug8w8";
+  const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY;
 
   const SYSTEM = `You are a patient, friendly teacher. Your job is to take complex text and explain it simply as if talking to a curious young child who has never heard these words before.
 
@@ -326,7 +326,6 @@ Rules:
   let activeId    = null;
   let pendingFile = null;
   let isStreaming = false;
-  let abortCtrl   = null;
   let stopFlag    = false;
   let lightMode   = false;
 
@@ -344,7 +343,7 @@ Rules:
     uploadBtn.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", e => { if(e.target.files[0]) handleFile(e.target.files[0]); fileInput.value=""; });
     pendingRmv.addEventListener("click", clearFile);
-    stopBtn.addEventListener("click", () => { stopFlag=true; abortCtrl?.abort(); stopBtn.style.display="none"; retryBtn.style.display="inline-block"; });
+    stopBtn.addEventListener("click", () => { stopFlag=true; stopBtn.style.display="none"; retryBtn.style.display="inline-block"; });
     retryBtn.addEventListener("click", regenerate);
     newChatBtn.addEventListener("click", () => { createChat(); closeSidebar(); });
     clearAllBtn.addEventListener("click", () => {
@@ -408,8 +407,6 @@ Rules:
       try { pdfText=await extractText(pendingFile); }
       catch(err) { toast(err.message); clearFile(); return; }
 
-      chats[activeId].pdfContext=pdfText;
-      chats[activeId].pdfName=fname;
       chats[activeId].title=fname.replace(".pdf","").slice(0,32);
       chatTitleEl.textContent=chats[activeId].title;
       renderSidebar();
@@ -421,7 +418,7 @@ Rules:
       });
 
       clearFile(); save();
-      await streamResponse();
+      await getResponse();
       return;
     }
 
@@ -434,62 +431,53 @@ Rules:
       renderSidebar();
     }
     save();
-    await streamResponse();
+    await getResponse();
   }
 
-  async function streamResponse() {
-    isStreaming=true; stopFlag=false; abortCtrl=new AbortController();
+  async function getResponse() {
+    isStreaming=true; stopFlag=false;
     sendBtn.disabled=true; stopBtn.style.display="inline-block"; retryBtn.style.display="none";
     showTyping();
 
-    const apiMsgs=[
-      {role:"user", content:SYSTEM},
-      {role:"assistant", content:"Understood. I will explain everything simply and clearly."},
-      ...chats[activeId].msgs.map(m=>({role:m.role, content:m.content}))
-    ];
+    // Build Gemini contents array
+    const contents = [];
+
+    // Add system instruction as first user turn
+    contents.push({ role: "user", parts: [{ text: SYSTEM }] });
+    contents.push({ role: "model", parts: [{ text: "Understood. I will explain everything simply and clearly." }] });
+
+    // Add conversation history
+    chats[activeId].msgs.forEach(m => {
+      contents.push({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }]
+      });
+    });
 
     try {
-      const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
-        method:"POST", signal:abortCtrl.signal,
-        headers:{"Authorization":`Bearer ${API_KEY}`,"Content-Type":"application/json","HTTP-Referer":location.href},
-        body:JSON.stringify({model:MODEL, messages:apiMsgs, stream:true})
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents, generationConfig: { maxOutputTokens: 2048 } })
       });
-      if (!res.ok) { const j=await res.json().catch(()=>({})); throw new Error(j?.error?.message||`HTTP ${res.status}`); }
 
-      removeTyping();
-      const wrap=document.createElement("div");
-      wrap.className="msg-wrap ai";
-      wrap.innerHTML=`<div class="ai-header"><div class="ai-badge">Simple</div><div class="ai-line"></div></div><div class="bubble-ai" id="live-b"></div>`;
-      messagesEl.appendChild(wrap);
-      const live=document.getElementById("live-b");
-      live.removeAttribute("id");
-      messagesEl.scrollTop=messagesEl.scrollHeight;
+      const data = await res.json();
 
-      const reader=res.body.getReader(), decoder=new TextDecoder();
-      let full="";
-
-      outer: while(true) {
-        const {done,value}=await reader.read();
-        if (done||stopFlag) break;
-        for (const line of decoder.decode(value,{stream:true}).split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-          const raw=line.slice(6).trim();
-          if (raw==="[DONE]") break outer;
-          try {
-            const delta=JSON.parse(raw)?.choices?.[0]?.delta?.content||"";
-            full+=delta;
-            live.innerHTML=safe(marked.parse(full));
-            messagesEl.scrollTop=messagesEl.scrollHeight;
-          } catch(_){}
-        }
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `HTTP ${res.status}`);
       }
 
-      chats[activeId].msgs.push({role:"assistant", content:full});
+      removeTyping();
+
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I could not generate a response.";
+
+      addBubble("ai", safe(marked.parse(reply)));
+      chats[activeId].msgs.push({role:"assistant", content:reply});
       save();
 
     } catch(err) {
       removeTyping();
-      if (err.name!=="AbortError") addBubble("ai",`Something went wrong: ${esc(err.message)} — status: ${res?.status}`);
+      addBubble("ai", `Something went wrong: ${esc(err.message)}`);
     } finally {
       isStreaming=false; sendBtn.disabled=false;
       stopBtn.style.display="none"; retryBtn.style.display="inline-block";
@@ -500,7 +488,7 @@ Rules:
   async function regenerate() {
     const msgs=chats[activeId]?.msgs;
     if (!msgs?.length||msgs.at(-1).role!=="assistant") return;
-    msgs.pop(); messagesEl.lastElementChild?.remove(); save(); await streamResponse();
+    msgs.pop(); messagesEl.lastElementChild?.remove(); save(); await getResponse();
   }
 
   function createChat() {
@@ -624,5 +612,3 @@ Rules:
 </script>
 </body>
 </html>
-
-
