@@ -33,11 +33,24 @@ body { font-family: var(--ff-body); background: var(--bg); color: var(--text); d
 button { font-family: var(--ff-body); cursor: pointer; }
 textarea { font-family: var(--ff-body); }
 
+/* ── LOADING SPLASH ──────────────────────────────────────── */
+#loading-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+.splash-logo { font-family: var(--ff-disp); font-size: 36px; font-weight: 700; color: var(--text); }
+.splash-logo span { color: var(--green); }
+.splash-dots { display: flex; gap: 6px; }
+.splash-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); opacity: 0.3; animation: pulse 1.3s infinite ease-in-out; }
+.splash-dot:nth-child(2) { animation-delay: 0.2s; }
+.splash-dot:nth-child(3) { animation-delay: 0.4s; }
+
 /* ── AUTH SCREEN ─────────────────────────────────────────── */
 #auth-screen {
   position: fixed; inset: 0; background: var(--bg); z-index: 9000;
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+  display: none; align-items: center; justify-content: center; padding: 20px;
 }
+#auth-screen.visible { display: flex; }
 .auth-card {
   width: 100%; max-width: 400px;
   background: var(--surface); border: 1px solid var(--border);
@@ -50,8 +63,7 @@ textarea { font-family: var(--ff-body); }
 .auth-tabs { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 28px; }
 .auth-tab {
   flex: 1; padding: 8px; border: none; background: none; color: var(--muted);
-  border-radius: 8px; font-family: var(--ff-body); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.18s;
+  border-radius: 8px; font-family: var(--ff-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.18s;
 }
 .auth-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
 .auth-field { margin-bottom: 14px; }
@@ -68,43 +80,51 @@ textarea { font-family: var(--ff-body); }
   width: 100%; background: var(--green); color: #0e0e0d; border: none;
   border-radius: 10px; padding: 12px; font-family: var(--ff-body);
   font-size: 14px; font-weight: 700; margin-top: 8px;
-  cursor: pointer; transition: filter 0.15s, transform 0.12s;
+  cursor: pointer; transition: filter 0.15s, transform 0.12s; position: relative;
 }
 .auth-submit:hover { filter: brightness(1.08); }
 .auth-submit:active { transform: scale(0.98); }
-.auth-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.auth-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.auth-spinner {
+  display: none; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: #0e0e0d; border-radius: 50%;
+  animation: spin 0.7s linear infinite; margin: 0 auto;
+}
+.auth-submit.loading .auth-btn-text { display: none; }
+.auth-submit.loading .auth-spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .auth-error {
   background: rgba(204,90,90,0.1); border: 1px solid rgba(204,90,90,0.3);
   color: #f0a0a0; border-radius: 8px; padding: 9px 13px;
-  font-size: 12.5px; margin-top: 12px; display: none;
+  font-size: 12.5px; margin-top: 12px; display: none; line-height: 1.5;
 }
 .auth-error.show { display: block; }
-.auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
-.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
-.auth-divider-text { font-size: 11px; color: var(--faint); }
+.auth-divider { text-align: center; margin: 16px 0 4px; }
+.auth-divider span { font-size: 11.5px; color: var(--faint); }
 .auth-note { font-size: 11.5px; color: var(--faint); text-align: center; line-height: 1.5; margin-top: 14px; }
+.forgot-link { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: -8px; margin-bottom: 14px; cursor: pointer; text-decoration: underline; transition: color 0.15s; }
+.forgot-link:hover { color: var(--green); }
 
-/* ── USER PILL in topbar ─────────────────────────────────── */
+/* ── USER PILL ───────────────────────────────────────────── */
 .user-pill {
-  display: flex; align-items: center; gap: 7px;
+  display: none; align-items: center; gap: 7px;
   background: var(--surface2); border: 1px solid var(--border2);
   border-radius: 100px; padding: 5px 12px 5px 8px;
-  font-size: 12px; color: var(--muted); cursor: default;
-  max-width: 130px;
+  max-width: 160px;
 }
+.user-pill.show { display: flex; }
 .user-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--green-dim); border: 1px solid rgba(168,204,90,0.3);
   color: var(--green); font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.user-email-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-size: 11.5px; }
+.user-email-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: var(--muted); }
 .btn-signout {
-  background: none; border: 1px solid var(--border2); color: var(--muted);
-  border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 500;
-  transition: all 0.15s; white-space: nowrap;
+  display: none; background: none; border: 1px solid var(--border2); color: var(--muted);
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 500; transition: all 0.15s;
 }
+.btn-signout.show { display: inline-block; }
 .btn-signout:hover { border-color: var(--red); color: var(--red); }
 
 /* ── SIDEBAR ─────────────────────────────────────────────── */
@@ -122,9 +142,13 @@ textarea { font-family: var(--ff-body); }
 .history-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; }
 .history-list::-webkit-scrollbar { width: 3px; }
 .history-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-.history-item { padding: 9px 14px; border-radius: 8px; cursor: pointer; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.14s; margin-bottom: 2px; border: 1px solid transparent; }
+.history-item { padding: 9px 14px; border-radius: 8px; cursor: pointer; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.14s; margin-bottom: 2px; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .history-item:hover { background: var(--surface2); color: var(--text); }
 .history-item.active { background: var(--green-dim); color: var(--green); border-color: rgba(168,204,90,0.18); }
+.history-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-delete { opacity: 0; background: none; border: none; color: var(--muted); font-size: 14px; line-height: 1; padding: 2px 4px; border-radius: 4px; flex-shrink: 0; transition: all 0.15s; }
+.history-item:hover .history-delete { opacity: 1; }
+.history-delete:hover { color: var(--red); }
 
 /* ── MAIN ────────────────────────────────────────────────── */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
@@ -135,7 +159,6 @@ textarea { font-family: var(--ff-body); }
 .topbar-right { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
 .tb-btn { background: none; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
 .tb-btn:hover { border-color: var(--green); color: var(--green); }
-
 .messages { flex: 1; overflow-y: auto; padding: 32px 0 16px; scroll-behavior: smooth; }
 .messages::-webkit-scrollbar { width: 4px; }
 .messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
@@ -148,8 +171,7 @@ textarea { font-family: var(--ff-body); }
 .ai-badge { background: var(--green-dim); border: 1px solid rgba(168,204,90,0.22); color: var(--green); font-size: 9.5px; font-weight: 700; letter-spacing: 1.8px; padding: 3px 9px; border-radius: 100px; text-transform: uppercase; flex-shrink: 0; }
 .ai-line { flex: 1; height: 1px; background: var(--border); }
 .bubble-ai { font-size: 14.5px; line-height: 1.78; color: var(--text); }
-.bubble-ai p { margin-bottom: 12px; }
-.bubble-ai p:last-child { margin-bottom: 0; }
+.bubble-ai p { margin-bottom: 12px; } .bubble-ai p:last-child { margin-bottom: 0; }
 .bubble-ai strong { color: #fff; font-weight: 600; }
 .bubble-ai em { color: var(--green); font-style: italic; }
 .bubble-ai h1,.bubble-ai h2,.bubble-ai h3 { font-family: var(--ff-disp); font-weight: 700; margin: 18px 0 8px; color: #fff; line-height: 1.25; }
@@ -161,14 +183,12 @@ textarea { font-family: var(--ff-body); }
 .bubble-ai pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 10px 0; }
 .bubble-ai blockquote { border-left: 3px solid var(--green); padding-left: 16px; color: var(--muted); margin: 12px 0; font-style: italic; }
 .bubble-ai hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-
 .typing-wrap { max-width: 720px; margin: 0 auto 24px; padding: 0 20px; }
 .typing-inner { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
 .t-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); opacity: 0.3; animation: pulse 1.3s infinite ease-in-out; }
 .t-dot:nth-child(2) { animation-delay: 0.2s; }
 .t-dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes pulse { 0%,100% { opacity:0.2; transform:scale(0.85); } 50% { opacity:1; transform:scale(1.15); } }
-
 .intro-wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; animation: rise 0.3s cubic-bezier(0.22,1,0.36,1) both; }
 .intro-kicker { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; color: var(--green); text-transform: uppercase; margin-bottom: 14px; }
 .intro-heading { font-family: var(--ff-disp); font-size: clamp(28px,5vw,48px); font-weight: 700; line-height: 1.1; color: #fff; margin-bottom: 14px; letter-spacing: -1px; }
@@ -183,7 +203,6 @@ textarea { font-family: var(--ff-body); }
 .chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { background: var(--surface2); border: 1px solid var(--border2); color: var(--muted); border-radius: 100px; padding: 8px 16px; font-size: 12.5px; font-weight: 500; transition: all 0.15s; }
 .chip:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
-
 .input-bar { background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
 .pending-strip { display: none; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid rgba(168,204,90,0.15); background: var(--green-dim); }
 .pending-strip.show { display: flex; }
@@ -193,7 +212,6 @@ textarea { font-family: var(--ff-body); }
 .pending-meta { font-size: 11px; color: rgba(168,204,90,0.45); margin-top: 1px; }
 .pending-remove { background: none; border: none; color: rgba(168,204,90,0.45); font-size: 18px; line-height: 1; padding: 4px 6px; cursor: pointer; border-radius: 4px; transition: color 0.15s; flex-shrink: 0; }
 .pending-remove:hover { color: var(--green); }
-
 .input-inner { max-width: 760px; margin: 0 auto; padding: 12px 16px 10px; display: flex; flex-direction: column; gap: 8px; }
 .textarea-box { display: flex; align-items: flex-end; background: var(--surface2); border: 1.5px solid var(--border2); border-radius: 16px; padding: 10px 10px 10px 16px; transition: border-color 0.18s, box-shadow 0.18s; }
 .textarea-box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(168,204,90,0.07); }
@@ -206,7 +224,6 @@ textarea::placeholder { color: var(--faint); }
 .send-btn:hover { filter: brightness(1.1); }
 .send-btn:active { transform: scale(0.93); }
 .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-
 .input-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; gap: 8px; }
 .toolbar-left { display: flex; align-items: center; gap: 2px; }
 .tool-btn { background: none; border: none; color: var(--muted); border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-family: var(--ff-body); font-weight: 500; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
@@ -218,95 +235,83 @@ textarea::placeholder { color: var(--faint); }
 .retry-pill { display: none; background: none; border: 1px solid var(--border2); color: var(--muted); border-radius: 100px; padding: 4px 14px; font-size: 12px; font-family: var(--ff-body); font-weight: 500; cursor: pointer; transition: all 0.15s; }
 .retry-pill:hover { border-color: var(--text); color: var(--text); }
 .hint-text { font-size: 10.5px; color: var(--faint); white-space: nowrap; }
-
 .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: #3a1a1a; border: 1px solid var(--red); color: #f0a0a0; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.22s ease; z-index: 9999; white-space: nowrap; max-width: 90vw; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.success { background: var(--green-dim); border-color: rgba(168,204,90,0.4); color: var(--green); }
+.toast.ok { background: var(--green-dim); border-color: rgba(168,204,90,0.4); color: var(--green); }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
 * { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
-
-/* Saving indicator */
-.save-indicator {
-  font-size: 10.5px; color: var(--faint); display: flex; align-items: center; gap: 4px;
-  transition: opacity 0.3s;
-}
-.save-indicator.saving { color: var(--green); opacity: 0.7; }
-.save-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
 @media (max-width: 768px) {
   .sidebar { position: fixed; top:0; left:0; bottom:0; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
   .overlay.show { display: block; }
   .menu-btn { display: flex; }
-  .user-pill { max-width: 100px; }
+  .user-pill { max-width: 110px; }
 }
 @media (max-width: 520px) {
-  .tool-label { display: none; }
-  .tb-div { display: none; }
-  .hint-text { display: none; }
-  .input-inner { padding: 10px 12px 8px; }
-  .textarea-box { border-radius: 14px; padding: 8px 8px 8px 14px; }
-  .msg-wrap { padding: 0 14px; }
-  .intro-wrap { padding: 0 16px; }
-  .bubble-user { max-width: 85%; }
-  .topbar { padding: 0 14px; }
-  .chips-row { gap: 6px; }
-  .chip { font-size: 12px; padding: 7px 13px; }
-  .drop-zone { padding: 28px 16px; }
-  .auth-card { padding: 32px 24px 28px; }
+  .tool-label { display: none; } .tb-div { display: none; } .hint-text { display: none; }
+  .input-inner { padding: 10px 12px 8px; } .textarea-box { border-radius: 14px; padding: 8px 8px 8px 14px; }
+  .msg-wrap { padding: 0 14px; } .intro-wrap { padding: 0 16px; } .bubble-user { max-width: 85%; }
+  .topbar { padding: 0 14px; } .chips-row { gap: 6px; } .chip { font-size: 12px; padding: 7px 13px; }
+  .drop-zone { padding: 28px 16px; } .auth-card { padding: 32px 24px 28px; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── AUTH SCREEN ───────────────────────────────────────── -->
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="splash-logo">PDF <span>sPutta</span></div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div><div class="splash-dot"></div><div class="splash-dot"></div>
+  </div>
+</div>
+
+<!-- Auth -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">PDF <span>sPutta</span></div>
     <div class="auth-tagline">Hard words made simple</div>
-
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login">Sign In</button>
       <button class="auth-tab" id="tab-signup">Create Account</button>
     </div>
 
-    <div id="auth-login-form">
-      <div class="auth-field">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
-      </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input type="password" id="login-pass" placeholder="Your password" autocomplete="current-password"/>
-      </div>
-      <button class="auth-submit" id="login-btn">Sign In</button>
+    <!-- Login -->
+    <div id="login-form">
+      <div class="auth-field"><label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="auth-field"><label>Password</label>
+        <input type="password" id="login-pass" placeholder="Your password" autocomplete="current-password"/></div>
+      <div class="forgot-link" id="forgot-link">Forgot password?</div>
+      <button class="auth-submit" id="login-btn">
+        <span class="auth-btn-text">Sign In</span>
+        <div class="auth-spinner"></div>
+      </button>
       <div class="auth-error" id="login-error"></div>
     </div>
 
-    <div id="auth-signup-form" style="display:none">
-      <div class="auth-field">
-        <label>Email</label>
-        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
-      </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input type="password" id="signup-pass" placeholder="Choose a password (min 6 chars)" autocomplete="new-password"/>
-      </div>
-      <div class="auth-field">
-        <label>Confirm Password</label>
-        <input type="password" id="signup-pass2" placeholder="Repeat password" autocomplete="new-password"/>
-      </div>
-      <button class="auth-submit" id="signup-btn">Create Account</button>
+    <!-- Signup -->
+    <div id="signup-form" style="display:none">
+      <div class="auth-field"><label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="auth-field"><label>Password</label>
+        <input type="password" id="signup-pass" placeholder="At least 6 characters" autocomplete="new-password"/></div>
+      <div class="auth-field"><label>Confirm Password</label>
+        <input type="password" id="signup-pass2" placeholder="Repeat password" autocomplete="new-password"/></div>
+      <button class="auth-submit" id="signup-btn">
+        <span class="auth-btn-text">Create Account</span>
+        <div class="auth-spinner"></div>
+      </button>
       <div class="auth-error" id="signup-error"></div>
     </div>
 
-    <div class="auth-note">Your chats are saved and synced to your account.</div>
+    <div class="auth-note">Chats are saved to your account across devices.</div>
   </div>
 </div>
 
-<!-- ── APP ────────────────────────────────────────────────── -->
+<!-- App -->
 <div class="overlay" id="overlay"></div>
-
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-top">
     <div class="logo">PDF <span>sPutta</span></div>
@@ -329,12 +334,12 @@ textarea::placeholder { color: var(--faint); }
     </button>
     <div class="chat-title" id="chat-title">New Chat</div>
     <div class="topbar-right">
-      <div class="user-pill" id="user-pill" style="display:none">
+      <div class="user-pill" id="user-pill">
         <div class="user-avatar" id="user-avatar">?</div>
         <span class="user-email-text" id="user-email-text"></span>
       </div>
-      <button class="btn-signout" id="signout-btn" style="display:none">Sign out</button>
-      <button class="tb-btn" id="export-btn" title="Export">
+      <button class="btn-signout" id="signout-btn">Sign out</button>
+      <button class="tb-btn" id="export-btn" title="Export chat">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
@@ -366,7 +371,6 @@ textarea::placeholder { color: var(--faint); }
       </div>
       <button class="pending-remove" id="pending-remove">&#x2715;</button>
     </div>
-
     <div class="input-inner">
       <div class="textarea-box">
         <textarea id="msg-input" rows="1" placeholder="Ask anything, or attach a PDF..."></textarea>
@@ -386,7 +390,6 @@ textarea::placeholder { color: var(--faint); }
           </button>
         </div>
       </div>
-
       <div class="input-toolbar">
         <div class="toolbar-left">
           <button class="tool-btn" data-prompt="Explain this simply, like I am a child.">
@@ -416,17 +419,33 @@ textarea::placeholder { color: var(--faint); }
 
 <div class="toast" id="toast"></div>
 
-<script>
-(function () {
-  "use strict";
+<script type="module">
+import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword,
+         signInWithEmailAndPassword, signOut,
+         onAuthStateChanged, sendPasswordResetEmail }
+                                                from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs,
+         setDoc, deleteDoc, query, orderBy }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+// ── Firebase config ───────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyConrGYhTeufziVf4sSkxCMOauEfNIxGiE",
+  authDomain:        "pdfsputa.firebaseapp.com",
+  projectId:         "pdfsputa",
+  storageBucket:     "pdfsputa.firebasestorage.app",
+  messagingSenderId: "769052451109",
+  appId:             "1:769052451109:web:b7df506c03e2a60834facc",
+  measurementId:     "G-PMLWEPGDJZ"
+};
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-  const API_KEY = "rpuUWIwS3fKxEtAh4ZsFZWbinkxtKmSGvllRHm7D";
-  const API_URL = "https://api.cohere.com/v2/chat";
-
-  const SYSTEM = `You are a patient, friendly teacher. Your job is to take complex text and explain it simply as if talking to a curious young child who has never heard these words before.
+// ── Cohere ────────────────────────────────────────────────
+const COHERE_KEY = "rpuUWIwS3fKxEtAh4ZsFZWbinkxtKmSGvllRHm7D";
+const COHERE_URL = "https://api.cohere.com/v2/chat";
+const SYSTEM = `You are a patient, friendly teacher. Your job is to take complex text and explain it simply as if talking to a curious young child who has never heard these words before.
 
 Rules:
 - Use only short everyday words. No jargon.
@@ -437,495 +456,463 @@ Rules:
 - When someone uploads a PDF, first ask them clearly what they want from it. Give them options: a full simple explanation, a short summary, just the key points, or specific questions answered. Wait for their answer before explaining anything.
 - When given a specific instruction about the PDF, follow it thoroughly.`;
 
-  const $ = id => document.getElementById(id);
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
 
-  // ── AUTH STATE ────────────────────────────────────────────
-  let currentUser = null; // { email, uid }
+// ── DOM refs ──────────────────────────────────────────────
+const $         = id => document.getElementById(id);
+const loadingEl = $("loading-screen");
+const authEl    = $("auth-screen");
+const tabLogin  = $("tab-login");
+const tabSignup = $("tab-signup");
+const loginForm = $("login-form");
+const signupForm= $("signup-form");
+const loginBtn  = $("login-btn");
+const signupBtn = $("signup-btn");
+const loginErr  = $("login-error");
+const signupErr = $("signup-error");
+const forgotLink= $("forgot-link");
+const userPill  = $("user-pill");
+const userAvatar= $("user-avatar");
+const userEmailT= $("user-email-text");
+const signoutBtn= $("signout-btn");
+const messagesEl= $("messages");
+const msgInput  = $("msg-input");
+const sendBtn   = $("send-btn");
+const stopBtn   = $("stop-btn");
+const retryBtn  = $("retry-btn");
+const uploadBtn = $("upload-btn");
+const fileInput = $("file-input");
+const pendingStrip=$("pending-strip");
+const pendingName=$("pending-name");
+const pendingMeta=$("pending-meta");
+const pendingRmv=$("pending-remove");
+const historyList=$("history-list");
+const chatTitleEl=$("chat-title");
+const toastEl   = $("toast");
+const newChatBtn= $("new-chat");
+const clearAllBtn=$("clear-all");
+const exportBtn = $("export-btn");
+const themeBtn  = $("theme-btn");
+const menuBtn   = $("menu-btn");
+const sidebar   = $("sidebar");
+const overlay   = $("overlay");
 
-  // Simple in-memory "user DB" backed by window.storage (shared: false = per user isn't right,
-  // so we use a hashed key per email). We store: users registry + per-user chats.
-  const USERS_KEY  = "sputta:users";        // shared=false (each browser instance)
-  const chatKey = uid => `sputta:chats:${uid}`;
+// ── State ─────────────────────────────────────────────────
+let currentUser = null;
+let chats       = {};   // { [chatId]: { title, msgs[], ts } }
+let activeId    = null;
+let pendingFile = null;
+let isStreaming = false;
+let lightMode   = false;
+let saveTimer   = null;
+let toastTimer  = null;
 
-  // Minimal hash for email → uid
-  function hashEmail(email) {
-    let h = 0;
-    for (let i = 0; i < email.length; i++) {
-      h = (Math.imul(31, h) + email.charCodeAt(i)) >>> 0;
-    }
-    return "u" + h.toString(36);
-  }
-
-  // ── STORAGE HELPERS ───────────────────────────────────────
-  async function storageGet(key) {
-    try {
-      const r = await window.storage.get(key);
-      return r ? JSON.parse(r.value) : null;
-    } catch (_) { return null; }
-  }
-  async function storageSet(key, val) {
-    try { await window.storage.set(key, JSON.stringify(val)); } catch (_) {}
-  }
-
-  // ── AUTH LOGIC ────────────────────────────────────────────
-  async function getUsers() {
-    return (await storageGet(USERS_KEY)) || {};
-  }
-  async function saveUsers(u) {
-    await storageSet(USERS_KEY, u);
-  }
-
-  async function doSignup(email, pass) {
-    email = email.trim().toLowerCase();
-    if (!email || !pass) throw new Error("Please fill in all fields.");
-    if (!email.includes("@")) throw new Error("Enter a valid email address.");
-    if (pass.length < 6) throw new Error("Password must be at least 6 characters.");
-
-    const users = await getUsers();
-    if (users[email]) throw new Error("An account with this email already exists.");
-
-    const uid = hashEmail(email);
-    // Simple hash for password — NOT cryptographic, but good enough for this demo
-    const passhash = btoa(unescape(encodeURIComponent(pass + "__sp__" + email)));
-    users[email] = { uid, passhash };
-    await saveUsers(users);
-    return { email, uid };
-  }
-
-  async function doLogin(email, pass) {
-    email = email.trim().toLowerCase();
-    if (!email || !pass) throw new Error("Please fill in all fields.");
-
-    const users = await getUsers();
-    const rec = users[email];
-    if (!rec) throw new Error("No account found with that email.");
-
-    const expected = btoa(unescape(encodeURIComponent(pass + "__sp__" + email)));
-    if (rec.passhash !== expected) throw new Error("Incorrect password.");
-
-    return { email, uid: rec.uid };
-  }
-
-  async function loadUserChats(uid) {
-    return (await storageGet(chatKey(uid))) || {};
-  }
-  async function saveUserChats(uid, chats) {
-    await storageSet(chatKey(uid), chats);
-  }
-
-  // ── AUTH UI ───────────────────────────────────────────────
-  const authScreen  = $("auth-screen");
-  const tabLogin    = $("tab-login");
-  const tabSignup   = $("tab-signup");
-  const loginForm   = $("auth-login-form");
-  const signupForm  = $("auth-signup-form");
-  const loginBtn    = $("login-btn");
-  const signupBtn   = $("signup-btn");
-  const loginError  = $("login-error");
-  const signupError = $("signup-error");
-  const userPill    = $("user-pill");
-  const userAvatar  = $("user-avatar");
-  const userEmailTx = $("user-email-text");
-  const signoutBtn  = $("signout-btn");
-
-  function showAuthError(el, msg) {
-    el.textContent = msg; el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 4000);
-  }
-
-  tabLogin.addEventListener("click", () => {
-    tabLogin.classList.add("active"); tabSignup.classList.remove("active");
-    loginForm.style.display = ""; signupForm.style.display = "none";
-    loginError.classList.remove("show"); signupError.classList.remove("show");
-  });
-  tabSignup.addEventListener("click", () => {
-    tabSignup.classList.add("active"); tabLogin.classList.remove("active");
-    signupForm.style.display = ""; loginForm.style.display = "none";
-    loginError.classList.remove("show"); signupError.classList.remove("show");
-  });
-
-  // Enter key on auth inputs
-  [$("login-email"), $("login-pass")].forEach(el => {
-    el.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn.click(); });
-  });
-  [$("signup-email"), $("signup-pass"), $("signup-pass2")].forEach(el => {
-    el.addEventListener("keydown", e => { if (e.key === "Enter") signupBtn.click(); });
-  });
-
-  loginBtn.addEventListener("click", async () => {
-    loginBtn.disabled = true;
-    loginError.classList.remove("show");
-    try {
-      const user = await doLogin($("login-email").value, $("login-pass").value);
-      await onAuthSuccess(user);
-    } catch (err) {
-      showAuthError(loginError, err.message);
-    } finally { loginBtn.disabled = false; }
-  });
-
-  signupBtn.addEventListener("click", async () => {
-    signupBtn.disabled = true;
-    signupError.classList.remove("show");
-    const p1 = $("signup-pass").value;
-    const p2 = $("signup-pass2").value;
-    if (p1 !== p2) { showAuthError(signupError, "Passwords do not match."); signupBtn.disabled = false; return; }
-    try {
-      const user = await doSignup($("signup-email").value, p1);
-      await onAuthSuccess(user);
-    } catch (err) {
-      showAuthError(signupError, err.message);
-    } finally { signupBtn.disabled = false; }
-  });
-
-  async function onAuthSuccess(user) {
+// ── Auth state observer ───────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  loadingEl.style.display = "none";
+  if (user) {
     currentUser = user;
-    // Show user in topbar
-    userAvatar.textContent = user.email[0].toUpperCase();
-    userEmailTx.textContent = user.email;
-    userPill.style.display = "flex";
-    signoutBtn.style.display = "inline-block";
-    // Hide auth screen
-    authScreen.style.opacity = "0";
-    authScreen.style.transition = "opacity 0.25s";
-    setTimeout(() => { authScreen.style.display = "none"; }, 250);
-    // Load chats
-    chats = await loadUserChats(user.uid);
-    const ids = Object.keys(chats).sort((a, b) => chats[b].ts - chats[a].ts);
+    showUserUI(user);
+    await loadChatsFromFirestore();
+    const ids = Object.keys(chats).sort((a,b) => chats[b].ts - chats[a].ts);
     if (ids.length) loadChat(ids[0]); else createChat();
-    toast("Welcome back, " + user.email.split("@")[0] + "!", true);
-  }
-
-  signoutBtn.addEventListener("click", () => {
-    if (!confirm("Sign out?")) return;
+  } else {
     currentUser = null;
     chats = {}; activeId = null;
-    userPill.style.display = "none";
-    signoutBtn.style.display = "none";
-    messagesEl.innerHTML = "";
-    historyList.innerHTML = "";
-    chatTitleEl.textContent = "New Chat";
-    authScreen.style.opacity = "1";
-    authScreen.style.display = "flex";
-    // Reset auth form
-    $("login-email").value = ""; $("login-pass").value = "";
-    tabLogin.click();
+    hideUserUI();
+    authEl.classList.add("visible");
+  }
+});
+
+// ── Auth UI toggles ───────────────────────────────────────
+tabLogin.addEventListener("click", () => {
+  tabLogin.classList.add("active"); tabSignup.classList.remove("active");
+  loginForm.style.display = ""; signupForm.style.display = "none";
+  loginErr.classList.remove("show"); signupErr.classList.remove("show");
+});
+tabSignup.addEventListener("click", () => {
+  tabSignup.classList.add("active"); tabLogin.classList.remove("active");
+  signupForm.style.display = ""; loginForm.style.display = "none";
+  loginErr.classList.remove("show"); signupErr.classList.remove("show");
+});
+
+[$("login-email"), $("login-pass")].forEach(el =>
+  el.addEventListener("keydown", e => { if (e.key==="Enter") loginBtn.click(); }));
+[$("signup-email"), $("signup-pass"), $("signup-pass2")].forEach(el =>
+  el.addEventListener("keydown", e => { if (e.key==="Enter") signupBtn.click(); }));
+
+loginBtn.addEventListener("click", async () => {
+  setAuthLoading(loginBtn, true);
+  loginErr.classList.remove("show");
+  try {
+    await signInWithEmailAndPassword(auth, $("login-email").value.trim(), $("login-pass").value);
+    authEl.classList.remove("visible");
+  } catch (err) {
+    showAuthErr(loginErr, friendlyError(err));
+  } finally { setAuthLoading(loginBtn, false); }
+});
+
+signupBtn.addEventListener("click", async () => {
+  const p1 = $("signup-pass").value, p2 = $("signup-pass2").value;
+  if (p1 !== p2) { showAuthErr(signupErr, "Passwords do not match."); return; }
+  setAuthLoading(signupBtn, true);
+  signupErr.classList.remove("show");
+  try {
+    await createUserWithEmailAndPassword(auth, $("signup-email").value.trim(), p1);
+    authEl.classList.remove("visible");
+  } catch (err) {
+    showAuthErr(signupErr, friendlyError(err));
+  } finally { setAuthLoading(signupBtn, false); }
+});
+
+forgotLink.addEventListener("click", async () => {
+  const email = $("login-email").value.trim();
+  if (!email) { showAuthErr(loginErr, "Enter your email above first."); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showAuthErr(loginErr, "Reset email sent! Check your inbox.", true);
+  } catch (err) {
+    showAuthErr(loginErr, friendlyError(err));
+  }
+});
+
+signoutBtn.addEventListener("click", async () => {
+  if (!confirm("Sign out?")) return;
+  await signOut(auth);
+  chats = {}; activeId = null;
+  messagesEl.innerHTML = ""; historyList.innerHTML = "";
+  chatTitleEl.textContent = "New Chat";
+});
+
+function showUserUI(user) {
+  userAvatar.textContent = (user.email || "?")[0].toUpperCase();
+  userEmailT.textContent = user.email || "";
+  userPill.classList.add("show");
+  signoutBtn.classList.add("show");
+  authEl.classList.remove("visible");
+}
+function hideUserUI() {
+  userPill.classList.remove("show");
+  signoutBtn.classList.remove("show");
+}
+function setAuthLoading(btn, on) {
+  btn.disabled = on; btn.classList.toggle("loading", on);
+}
+function showAuthErr(el, msg, isOk=false) {
+  el.textContent = msg;
+  el.style.background = isOk ? "rgba(168,204,90,0.1)" : "";
+  el.style.borderColor = isOk ? "rgba(168,204,90,0.3)" : "";
+  el.style.color       = isOk ? "var(--green)" : "";
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 5000);
+}
+function friendlyError(err) {
+  const map = {
+    "auth/user-not-found":      "No account found with that email.",
+    "auth/wrong-password":      "Incorrect password.",
+    "auth/invalid-credential":  "Email or password is incorrect.",
+    "auth/email-already-in-use":"An account with this email already exists.",
+    "auth/weak-password":       "Password must be at least 6 characters.",
+    "auth/invalid-email":       "Please enter a valid email address.",
+    "auth/too-many-requests":   "Too many attempts. Please wait a moment.",
+    "auth/network-request-failed": "Network error. Check your connection.",
+  };
+  return map[err.code] || err.message || "Something went wrong.";
+}
+
+// ── Firestore helpers ─────────────────────────────────────
+function chatsCol() {
+  return collection(db, "users", currentUser.uid, "chats");
+}
+async function loadChatsFromFirestore() {
+  chats = {};
+  try {
+    const q   = query(chatsCol(), orderBy("ts", "desc"));
+    const snap= await getDocs(q);
+    snap.forEach(d => { chats[d.id] = d.data(); });
+  } catch (_) {}
+}
+function scheduleSave(chatId) {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => persistChat(chatId), 800);
+}
+async function persistChat(chatId) {
+  if (!currentUser || !chats[chatId]) return;
+  try {
+    await setDoc(doc(db, "users", currentUser.uid, "chats", chatId), chats[chatId]);
+  } catch (_) {}
+}
+async function deleteChat(chatId) {
+  delete chats[chatId];
+  try { await deleteDoc(doc(db, "users", currentUser.uid, "chats", chatId)); } catch (_) {}
+}
+
+// ── Chat logic ────────────────────────────────────────────
+bindAll();
+
+function bindAll() {
+  sendBtn.addEventListener("click", handleSend);
+  msgInput.addEventListener("input", autosize);
+  msgInput.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();} });
+  uploadBtn.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", e => { if(e.target.files[0]) handleFile(e.target.files[0]); fileInput.value=""; });
+  pendingRmv.addEventListener("click", clearFile);
+  stopBtn.addEventListener("click", () => { isStreaming=false; stopBtn.style.display="none"; retryBtn.style.display="inline-block"; });
+  retryBtn.addEventListener("click", regenerate);
+  newChatBtn.addEventListener("click", () => { createChat(); closeSidebar(); });
+  clearAllBtn.addEventListener("click", async () => {
+    if (!confirm("Delete all chat history?")) return;
+    const ids = Object.keys(chats);
+    for (const id of ids) await deleteChat(id);
+    createChat(); closeSidebar();
   });
+  exportBtn.addEventListener("click", exportChat);
+  themeBtn.addEventListener("click", toggleTheme);
+  menuBtn.addEventListener("click", () => { sidebar.classList.toggle("open"); overlay.classList.toggle("show"); });
+  overlay.addEventListener("click", closeSidebar);
+  document.querySelectorAll(".tool-btn").forEach(btn => {
+    btn.addEventListener("click", () => { msgInput.value=btn.dataset.prompt||""; msgInput.focus(); autosize(); });
+  });
+  document.addEventListener("dragover", e => e.preventDefault());
+  document.addEventListener("drop", e => {
+    e.preventDefault();
+    const f=e.dataTransfer?.files?.[0];
+    if(f?.type==="application/pdf") handleFile(f); else if(f) toast("Only PDF files are supported.");
+  });
+}
 
-  // ── CHAT ENGINE (original, adapted for per-user storage) ──
-  const messagesEl   = $("messages");
-  const msgInput     = $("msg-input");
-  const sendBtn      = $("send-btn");
-  const stopBtn      = $("stop-btn");
-  const retryBtn     = $("retry-btn");
-  const uploadBtn    = $("upload-btn");
-  const fileInput    = $("file-input");
-  const pendingStrip = $("pending-strip");
-  const pendingName  = $("pending-name");
-  const pendingMeta  = $("pending-meta");
-  const pendingRmv   = $("pending-remove");
-  const historyList  = $("history-list");
-  const chatTitleEl  = $("chat-title");
-  const toastEl      = $("toast");
-  const newChatBtn   = $("new-chat");
-  const clearAllBtn  = $("clear-all");
-  const exportBtn    = $("export-btn");
-  const themeBtn     = $("theme-btn");
-  const menuBtn      = $("menu-btn");
-  const sidebar      = $("sidebar");
-  const overlay      = $("overlay");
+function closeSidebar() { sidebar.classList.remove("open"); overlay.classList.remove("show"); }
 
-  let chats       = {};
-  let activeId    = null;
-  let pendingFile = null;
-  let isStreaming = false;
-  let stopFlag    = false;
-  let lightMode   = false;
-  let saveTimer   = null;
+function handleFile(file) {
+  if(file.type!=="application/pdf"){toast("Only PDF files are supported.");return;}
+  pendingFile=file;
+  pendingName.textContent=file.name;
+  pendingMeta.textContent=`${(file.size/1024).toFixed(0)} KB · PDF`;
+  pendingStrip.classList.add("show");
+}
+function clearFile() { pendingFile=null; pendingStrip.classList.remove("show"); }
 
-  function save() {
-    if (!currentUser) return;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => saveUserChats(currentUser.uid, chats), 600);
+async function extractText(file) {
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let out="";
+  const max=Math.min(pdf.numPages,40);
+  for(let i=1;i<=max;i++){
+    const page=await pdf.getPage(i);
+    const content=await page.getTextContent();
+    out+=content.items.map(x=>x.str).join(" ")+"\n";
   }
+  if(!out.trim()) throw new Error("No readable text found. This PDF may be scanned or image-based.");
+  if(out.length>15000) out=out.slice(0,15000)+"\n\n[Document truncated.]";
+  return out;
+}
 
-  bindAll();
+async function handleSend() {
+  if(isStreaming) return;
+  const text=msgInput.value.trim();
+  if(!text&&!pendingFile) return;
+  msgInput.value=""; autosize();
+  if(!chats[activeId]) createChat();
 
-  function bindAll() {
-    sendBtn.addEventListener("click", handleSend);
-    msgInput.addEventListener("input", autosize);
-    msgInput.addEventListener("keydown", e => { if (e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();} });
-    uploadBtn.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", e => { if(e.target.files[0]) handleFile(e.target.files[0]); fileInput.value=""; });
-    pendingRmv.addEventListener("click", clearFile);
-    stopBtn.addEventListener("click", () => { stopFlag=true; stopBtn.style.display="none"; retryBtn.style.display="inline-block"; });
-    retryBtn.addEventListener("click", regenerate);
-    newChatBtn.addEventListener("click", () => { createChat(); closeSidebar(); });
-    clearAllBtn.addEventListener("click", () => {
-      if(!confirm("Delete all chat history?")) return;
-      chats={}; save(); createChat(); closeSidebar();
+  if(pendingFile){
+    const fname=pendingFile.name;
+    addBubble("user",`<strong>Uploaded:</strong> ${esc(fname)}`);
+    let pdfText;
+    try { pdfText=await extractText(pendingFile); }
+    catch(err){ toast(err.message); clearFile(); return; }
+    chats[activeId].title=fname.replace(".pdf","").slice(0,32);
+    chatTitleEl.textContent=chats[activeId].title;
+    renderSidebar();
+    chats[activeId].msgs.push({
+      role:"user",
+      content:`The user has uploaded a PDF called "${fname}". Here is the full text:\n\n${pdfText}\n\nDo NOT explain it yet. Ask the user what they would like from this document. Give them clear friendly options: a full simple explanation, a short summary, just the key points, or specific questions answered. Be warm and concise.`,
+      _hidden:true
     });
-    exportBtn.addEventListener("click", exportChat);
-    themeBtn.addEventListener("click", toggleTheme);
-    menuBtn.addEventListener("click", () => { sidebar.classList.toggle("open"); overlay.classList.toggle("show"); });
-    overlay.addEventListener("click", closeSidebar);
-    document.querySelectorAll(".tool-btn").forEach(btn => {
-      btn.addEventListener("click", () => { msgInput.value=btn.dataset.prompt||""; msgInput.focus(); autosize(); });
-    });
-    document.addEventListener("dragover", e => e.preventDefault());
-    document.addEventListener("drop", e => {
-      e.preventDefault();
-      const f=e.dataTransfer?.files?.[0];
-      if(f?.type==="application/pdf") handleFile(f);
-      else if(f) toast("Only PDF files are supported.");
-    });
-  }
-
-  function closeSidebar() { sidebar.classList.remove("open"); overlay.classList.remove("show"); }
-
-  function handleFile(file) {
-    if (file.type!=="application/pdf") { toast("Only PDF files are supported."); return; }
-    pendingFile=file;
-    pendingName.textContent=file.name;
-    pendingMeta.textContent=`${(file.size/1024).toFixed(0)} KB · PDF`;
-    pendingStrip.classList.add("show");
-  }
-
-  function clearFile() { pendingFile=null; pendingStrip.classList.remove("show"); }
-
-  async function extractText(file) {
-    const buf=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    let out="";
-    const max=Math.min(pdf.numPages,40);
-    for (let i=1;i<=max;i++) {
-      const page=await pdf.getPage(i);
-      const content=await page.getTextContent();
-      out+=content.items.map(x=>x.str).join(" ")+"\n";
-    }
-    if (!out.trim()) throw new Error("No readable text found. This PDF may be scanned or image-based.");
-    if (out.length>15000) out=out.slice(0,15000)+"\n\n[Document truncated.]";
-    return out;
-  }
-
-  async function handleSend() {
-    if (isStreaming) return;
-    const text=msgInput.value.trim();
-    if (!text&&!pendingFile) return;
-    msgInput.value=""; autosize();
-    if (!chats[activeId]) createChat();
-
-    if (pendingFile) {
-      const fname=pendingFile.name;
-      addBubble("user",`<strong>Uploaded:</strong> ${esc(fname)}`);
-      let pdfText;
-      try { pdfText=await extractText(pendingFile); }
-      catch(err) { toast(err.message); clearFile(); return; }
-
-      chats[activeId].title=fname.replace(".pdf","").slice(0,32);
-      chatTitleEl.textContent=chats[activeId].title;
-      renderSidebar();
-
-      chats[activeId].msgs.push({
-        role:"user",
-        content:`The user has uploaded a PDF called "${fname}". Here is the full text:\n\n${pdfText}\n\nDo NOT explain it yet. Ask the user what they would like from this document. Give them clear friendly options: a full simple explanation, a short summary, just the key points, or specific questions answered. Be warm and concise.`,
-        _hidden:true
-      });
-
-      clearFile(); save();
-      await getResponse();
-      return;
-    }
-
-    addBubble("user", esc(text));
-    chats[activeId].msgs.push({role:"user", content:text});
-    const userVisible=chats[activeId].msgs.filter(m=>m.role==="user"&&!m._hidden).length;
-    if (userVisible===1) {
-      chats[activeId].title=text.slice(0,32);
-      chatTitleEl.textContent=chats[activeId].title;
-      renderSidebar();
-    }
-    save();
+    clearFile(); scheduleSave(activeId);
     await getResponse();
+    return;
   }
 
-  async function getResponse() {
-    isStreaming=true; stopFlag=false;
-    sendBtn.disabled=true; stopBtn.style.display="inline-block"; retryBtn.style.display="none";
-    showTyping();
-
-    const messages = [
-      { role: "system", content: SYSTEM },
-      ...chats[activeId].msgs.map(m => ({
-        role: m.role === "user" ? "user" : "assistant",
-        content: m.content
-      }))
-    ];
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          model: "command-r-plus-08-2024",
-          messages: messages
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-
-      removeTyping();
-      const reply = data?.message?.content?.[0]?.text || "Sorry, I could not generate a response.";
-      addBubble("ai", safe(marked.parse(reply)));
-      chats[activeId].msgs.push({role:"assistant", content:reply});
-      save();
-
-    } catch(err) {
-      removeTyping();
-      addBubble("ai", `Something went wrong: ${esc(err.message)}`);
-    } finally {
-      isStreaming=false; sendBtn.disabled=false;
-      stopBtn.style.display="none"; retryBtn.style.display="inline-block";
-      removeTyping();
-    }
-  }
-
-  async function regenerate() {
-    const msgs=chats[activeId]?.msgs;
-    if (!msgs?.length||msgs.at(-1).role!=="assistant") return;
-    msgs.pop(); messagesEl.lastElementChild?.remove(); save(); await getResponse();
-  }
-
-  function createChat() {
-    const id="c"+Date.now();
-    chats[id]={title:"New Chat",msgs:[],ts:Date.now()};
-    activeId=id; chatTitleEl.textContent="New Chat";
-    renderIntro(); renderSidebar(); save();
-  }
-
-  function loadChat(id) {
-    if (!chats[id]) return;
-    activeId=id; chatTitleEl.textContent=chats[id].title;
-    messagesEl.innerHTML="";
-    chats[id].msgs.forEach(m => {
-      if (m._hidden) return;
-      if (m.role==="user") addBubble("user", esc(m.content));
-      else addBubble("ai", safe(marked.parse(m.content)));
-    });
-    if (!chats[id].msgs.filter(m=>!m._hidden).length) renderIntro();
+  addBubble("user", esc(text));
+  chats[activeId].msgs.push({role:"user", content:text});
+  const userVisible=chats[activeId].msgs.filter(m=>m.role==="user"&&!m._hidden).length;
+  if(userVisible===1){
+    chats[activeId].title=text.slice(0,32);
+    chatTitleEl.textContent=chats[activeId].title;
     renderSidebar();
   }
+  scheduleSave(activeId);
+  await getResponse();
+}
 
-  function renderSidebar() {
-    historyList.innerHTML="";
-    Object.keys(chats).sort((a,b)=>chats[b].ts-chats[a].ts).forEach(id=>{
-      const el=document.createElement("div");
-      el.className="history-item"+(id===activeId?" active":"");
-      el.textContent=chats[id].title;
-      el.addEventListener("click",()=>{loadChat(id);closeSidebar();});
-      historyList.appendChild(el);
+async function getResponse() {
+  isStreaming=true;
+  sendBtn.disabled=true; stopBtn.style.display="inline-block"; retryBtn.style.display="none";
+  showTyping();
+  const messages=[
+    {role:"system", content:SYSTEM},
+    ...chats[activeId].msgs.map(m=>({role:m.role==="user"?"user":"assistant", content:m.content}))
+  ];
+  try {
+    const res=await fetch(COHERE_URL,{
+      method:"POST",
+      headers:{"Authorization":`Bearer ${COHERE_KEY}`,"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({model:"command-r-plus-08-2024", messages})
     });
-  }
-
-  function renderIntro() {
-    messagesEl.innerHTML="";
-    const wrap=document.createElement("div");
-    wrap.innerHTML=`
-      <div class="intro-wrap">
-        <div class="intro-kicker">Plain language. Always.</div>
-        <h1 class="intro-heading">Big words.<br><em>Tiny explanations.</em></h1>
-        <p class="intro-sub">Upload any PDF or ask anything — get a plain breakdown that anyone can understand.</p>
-        <div class="drop-zone" id="intro-drop">
-          <div class="drop-icon">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
-          </div>
-          <div class="drop-title">Drop your PDF here</div>
-          <div class="drop-sub">or <span id="browse-link">click to browse</span></div>
-        </div>
-        <div class="chips-row">
-          <button class="chip">What is a lease agreement?</button>
-          <button class="chip">How does compound interest work?</button>
-          <button class="chip">What is a terms of service?</button>
-          <button class="chip">Explain what a will is</button>
-        </div>
-      </div>`;
-    messagesEl.appendChild(wrap);
-
-    $("browse-link")?.addEventListener("click",()=>fileInput.click());
-    const dz=$("intro-drop");
-    dz.addEventListener("click",()=>fileInput.click());
-    dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drag-over");});
-    dz.addEventListener("dragleave",()=>dz.classList.remove("drag-over"));
-    dz.addEventListener("drop",e=>{
-      e.preventDefault(); dz.classList.remove("drag-over");
-      const f=e.dataTransfer?.files?.[0];
-      if(f?.type==="application/pdf") handleFile(f); else toast("Only PDF files are supported.");
-    });
-    wrap.querySelectorAll(".chip").forEach(c=>{
-      c.addEventListener("click",()=>{msgInput.value=c.textContent;msgInput.focus();autosize();});
-    });
-  }
-
-  function addBubble(role,html) {
-    const wrap=document.createElement("div");
-    if (role==="user") { wrap.className="msg-wrap user"; wrap.innerHTML=`<div class="bubble-user">${html}</div>`; }
-    else { wrap.className="msg-wrap ai"; wrap.innerHTML=`<div class="ai-header"><div class="ai-badge">Simple</div><div class="ai-line"></div></div><div class="bubble-ai">${html}</div>`; }
-    messagesEl.appendChild(wrap);
-    messagesEl.scrollTop=messagesEl.scrollHeight;
-  }
-
-  function showTyping() {
+    const data=await res.json();
+    if(!res.ok) throw new Error(data?.message||`HTTP ${res.status}`);
     removeTyping();
+    const reply=data?.message?.content?.[0]?.text||"Sorry, I could not generate a response.";
+    addBubble("ai", safe(marked.parse(reply)));
+    chats[activeId].msgs.push({role:"assistant", content:reply});
+    scheduleSave(activeId);
+  } catch(err){
+    removeTyping();
+    addBubble("ai",`Something went wrong: ${esc(err.message)}`);
+  } finally {
+    isStreaming=false; sendBtn.disabled=false;
+    stopBtn.style.display="none"; retryBtn.style.display="inline-block";
+    removeTyping();
+  }
+}
+
+async function regenerate() {
+  const msgs=chats[activeId]?.msgs;
+  if(!msgs?.length||msgs.at(-1).role!=="assistant") return;
+  msgs.pop(); messagesEl.lastElementChild?.remove(); scheduleSave(activeId); await getResponse();
+}
+
+function createChat() {
+  const id="c"+Date.now();
+  chats[id]={title:"New Chat", msgs:[], ts:Date.now()};
+  activeId=id; chatTitleEl.textContent="New Chat";
+  renderIntro(); renderSidebar(); scheduleSave(id);
+}
+
+function loadChat(id) {
+  if(!chats[id]) return;
+  activeId=id; chatTitleEl.textContent=chats[id].title;
+  messagesEl.innerHTML="";
+  chats[id].msgs.forEach(m=>{
+    if(m._hidden) return;
+    if(m.role==="user") addBubble("user", esc(m.content));
+    else addBubble("ai", safe(marked.parse(m.content)));
+  });
+  if(!chats[id].msgs.filter(m=>!m._hidden).length) renderIntro();
+  renderSidebar();
+}
+
+function renderSidebar() {
+  historyList.innerHTML="";
+  Object.keys(chats).sort((a,b)=>chats[b].ts-chats[a].ts).forEach(id=>{
     const el=document.createElement("div");
-    el.id="typing-el"; el.className="typing-wrap";
-    el.innerHTML=`<div class="typing-inner"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>`;
-    messagesEl.appendChild(el);
-    messagesEl.scrollTop=messagesEl.scrollHeight;
+    el.className="history-item"+(id===activeId?" active":"");
+
+    const title=document.createElement("span");
+    title.className="history-item-title";
+    title.textContent=chats[id].title;
+
+    const del=document.createElement("button");
+    del.className="history-delete"; del.textContent="✕"; del.title="Delete chat";
+    del.addEventListener("click", async e => {
+      e.stopPropagation();
+      await deleteChat(id);
+      if(id===activeId){
+        const remaining=Object.keys(chats).sort((a,b)=>chats[b].ts-chats[a].ts);
+        if(remaining.length) loadChat(remaining[0]); else createChat();
+      } else renderSidebar();
+    });
+
+    el.appendChild(title); el.appendChild(del);
+    el.addEventListener("click", ()=>{ loadChat(id); closeSidebar(); });
+    historyList.appendChild(el);
+  });
+}
+
+function renderIntro() {
+  messagesEl.innerHTML="";
+  const wrap=document.createElement("div");
+  wrap.innerHTML=`
+    <div class="intro-wrap">
+      <div class="intro-kicker">Plain language. Always.</div>
+      <h1 class="intro-heading">Big words.<br><em>Tiny explanations.</em></h1>
+      <p class="intro-sub">Upload any PDF or ask anything — get a plain breakdown that anyone can understand.</p>
+      <div class="drop-zone" id="intro-drop">
+        <div class="drop-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="drop-title">Drop your PDF here</div>
+        <div class="drop-sub">or <span id="browse-link">click to browse</span></div>
+      </div>
+      <div class="chips-row">
+        <button class="chip">What is a lease agreement?</button>
+        <button class="chip">How does compound interest work?</button>
+        <button class="chip">What is a terms of service?</button>
+        <button class="chip">Explain what a will is</button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(wrap);
+  $("browse-link")?.addEventListener("click",()=>fileInput.click());
+  const dz=$("intro-drop");
+  dz.addEventListener("click",()=>fileInput.click());
+  dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drag-over");});
+  dz.addEventListener("dragleave",()=>dz.classList.remove("drag-over"));
+  dz.addEventListener("drop",e=>{
+    e.preventDefault(); dz.classList.remove("drag-over");
+    const f=e.dataTransfer?.files?.[0];
+    if(f?.type==="application/pdf") handleFile(f); else toast("Only PDF files are supported.");
+  });
+  wrap.querySelectorAll(".chip").forEach(c=>{
+    c.addEventListener("click",()=>{msgInput.value=c.textContent;msgInput.focus();autosize();});
+  });
+}
+
+function addBubble(role,html) {
+  const wrap=document.createElement("div");
+  if(role==="user"){ wrap.className="msg-wrap user"; wrap.innerHTML=`<div class="bubble-user">${html}</div>`; }
+  else { wrap.className="msg-wrap ai"; wrap.innerHTML=`<div class="ai-header"><div class="ai-badge">Simple</div><div class="ai-line"></div></div><div class="bubble-ai">${html}</div>`; }
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function showTyping() {
+  removeTyping();
+  const el=document.createElement("div");
+  el.id="typing-el"; el.className="typing-wrap";
+  el.innerHTML=`<div class="typing-inner"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>`;
+  messagesEl.appendChild(el);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function removeTyping() { $("typing-el")?.remove(); }
+function autosize() { msgInput.style.height="auto"; msgInput.style.height=Math.min(msgInput.scrollHeight,140)+"px"; }
+function safe(html) { return window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<script[\s\S]*?<\/script>/gi,""); }
+function esc(s) { const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function toast(msg, ok=false) {
+  toastEl.textContent=msg; toastEl.classList.toggle("ok",ok); toastEl.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove("show"),3200);
+}
+function exportChat() {
+  const chat=chats[activeId]; if(!chat) return;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(chat,null,2)],{type:"application/json"}));
+  a.download=`sputta-${Date.now()}.json`; a.click();
+}
+function toggleTheme() {
+  lightMode=!lightMode;
+  const r=document.documentElement.style;
+  if(lightMode){
+    r.setProperty("--bg","#f4f1ea"); r.setProperty("--surface","#fffef9"); r.setProperty("--surface2","#ede9df");
+    r.setProperty("--border","#ddd8cc"); r.setProperty("--border2","#ccc8be"); r.setProperty("--text","#1a1a18");
+    r.setProperty("--muted","#7a7568"); r.setProperty("--faint","#b0ab9f");
+    r.setProperty("--green","#4a7c10"); r.setProperty("--green-dim","#e4edcc");
+  } else {
+    ["--bg","--surface","--surface2","--border","--border2","--text","--muted","--faint","--green","--green-dim"].forEach(v=>r.removeProperty(v));
   }
-
-  function removeTyping() { $("typing-el")?.remove(); }
-  function autosize() { msgInput.style.height="auto"; msgInput.style.height=Math.min(msgInput.scrollHeight,140)+"px"; }
-  function safe(html) { return window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<script[\s\S]*?<\/script>/gi,""); }
-  function esc(s) { const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
-
-  let toastTimeout = null;
-  function toast(msg, success=false) {
-    toastEl.textContent=msg;
-    toastEl.classList.toggle("success", success);
-    toastEl.classList.add("show");
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(()=>toastEl.classList.remove("show"),3200);
-  }
-
-  function exportChat() {
-    const chat=chats[activeId]; if(!chat) return;
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([JSON.stringify(chat,null,2)],{type:"application/json"}));
-    a.download=`sputta-${Date.now()}.json`; a.click();
-  }
-
-  function toggleTheme() {
-    lightMode=!lightMode;
-    const r=document.documentElement.style;
-    if (lightMode) {
-      r.setProperty("--bg","#f4f1ea"); r.setProperty("--surface","#fffef9"); r.setProperty("--surface2","#ede9df");
-      r.setProperty("--border","#ddd8cc"); r.setProperty("--border2","#ccc8be"); r.setProperty("--text","#1a1a18");
-      r.setProperty("--muted","#7a7568"); r.setProperty("--faint","#b0ab9f");
-      r.setProperty("--green","#4a7c10"); r.setProperty("--green-dim","#e4edcc");
-    } else {
-      ["--bg","--surface","--surface2","--border","--border2","--text","--muted","--faint","--green","--green-dim"].forEach(v=>r.removeProperty(v));
-    }
-  }
-
-})();
+}
 </script>
 </body>
 </html>
