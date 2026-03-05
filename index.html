@@ -33,6 +33,81 @@ body { font-family: var(--ff-body); background: var(--bg); color: var(--text); d
 button { font-family: var(--ff-body); cursor: pointer; }
 textarea { font-family: var(--ff-body); }
 
+/* ── AUTH SCREEN ─────────────────────────────────────────── */
+#auth-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.auth-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px 36px 36px;
+  animation: rise 0.3s cubic-bezier(0.22,1,0.36,1) both;
+}
+.auth-logo { font-family: var(--ff-disp); font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
+.auth-logo span { color: var(--green); }
+.auth-tagline { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 1.8px; margin-bottom: 32px; }
+.auth-tabs { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 28px; }
+.auth-tab {
+  flex: 1; padding: 8px; border: none; background: none; color: var(--muted);
+  border-radius: 8px; font-family: var(--ff-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+}
+.auth-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.auth-field { margin-bottom: 14px; }
+.auth-field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+.auth-field input {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border2);
+  border-radius: 10px; padding: 11px 14px; color: var(--text);
+  font-family: var(--ff-body); font-size: 14px; outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.auth-field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(168,204,90,0.07); }
+.auth-field input::placeholder { color: var(--faint); }
+.auth-submit {
+  width: 100%; background: var(--green); color: #0e0e0d; border: none;
+  border-radius: 10px; padding: 12px; font-family: var(--ff-body);
+  font-size: 14px; font-weight: 700; margin-top: 8px;
+  cursor: pointer; transition: filter 0.15s, transform 0.12s;
+}
+.auth-submit:hover { filter: brightness(1.08); }
+.auth-submit:active { transform: scale(0.98); }
+.auth-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.auth-error {
+  background: rgba(204,90,90,0.1); border: 1px solid rgba(204,90,90,0.3);
+  color: #f0a0a0; border-radius: 8px; padding: 9px 13px;
+  font-size: 12.5px; margin-top: 12px; display: none;
+}
+.auth-error.show { display: block; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+.auth-divider-text { font-size: 11px; color: var(--faint); }
+.auth-note { font-size: 11.5px; color: var(--faint); text-align: center; line-height: 1.5; margin-top: 14px; }
+
+/* ── USER PILL in topbar ─────────────────────────────────── */
+.user-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 100px; padding: 5px 12px 5px 8px;
+  font-size: 12px; color: var(--muted); cursor: default;
+  max-width: 130px;
+}
+.user-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green-dim); border: 1px solid rgba(168,204,90,0.3);
+  color: var(--green); font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.user-email-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-size: 11.5px; }
+.btn-signout {
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 500;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-signout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
 .sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; transition: transform 0.25s ease; z-index: 100; }
 .sidebar-top { padding: 28px 22px 20px; border-bottom: 1px solid var(--border); }
 .logo { font-family: var(--ff-disp); font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
@@ -51,12 +126,13 @@ textarea { font-family: var(--ff-body); }
 .history-item:hover { background: var(--surface2); color: var(--text); }
 .history-item.active { background: var(--green-dim); color: var(--green); border-color: rgba(168,204,90,0.18); }
 
+/* ── MAIN ────────────────────────────────────────────────── */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 .topbar { height: 56px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 10px; background: var(--surface); flex-shrink: 0; }
 .menu-btn { display: none; background: none; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; width: 34px; height: 34px; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
 .menu-btn:hover { border-color: var(--green); color: var(--green); }
 .chat-title { flex: 1; font-family: var(--ff-disp); font-style: italic; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar-right { display: flex; gap: 8px; flex-shrink: 0; }
+.topbar-right { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
 .tb-btn { background: none; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
 .tb-btn:hover { border-color: var(--green); color: var(--green); }
 
@@ -145,14 +221,24 @@ textarea::placeholder { color: var(--faint); }
 
 .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: #3a1a1a; border: 1px solid var(--red); color: #f0a0a0; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.22s ease; z-index: 9999; white-space: nowrap; max-width: 90vw; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green-dim); border-color: rgba(168,204,90,0.4); color: var(--green); }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
 * { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+
+/* Saving indicator */
+.save-indicator {
+  font-size: 10.5px; color: var(--faint); display: flex; align-items: center; gap: 4px;
+  transition: opacity 0.3s;
+}
+.save-indicator.saving { color: var(--green); opacity: 0.7; }
+.save-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
 @media (max-width: 768px) {
   .sidebar { position: fixed; top:0; left:0; bottom:0; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
   .overlay.show { display: block; }
   .menu-btn { display: flex; }
+  .user-pill { max-width: 100px; }
 }
 @media (max-width: 520px) {
   .tool-label { display: none; }
@@ -167,11 +253,58 @@ textarea::placeholder { color: var(--faint); }
   .chips-row { gap: 6px; }
   .chip { font-size: 12px; padding: 7px 13px; }
   .drop-zone { padding: 28px 16px; }
+  .auth-card { padding: 32px 24px 28px; }
 }
 </style>
 </head>
 <body>
 
+<!-- ── AUTH SCREEN ───────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">PDF <span>sPutta</span></div>
+    <div class="auth-tagline">Hard words made simple</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login">Sign In</button>
+      <button class="auth-tab" id="tab-signup">Create Account</button>
+    </div>
+
+    <div id="auth-login-form">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Your password" autocomplete="current-password"/>
+      </div>
+      <button class="auth-submit" id="login-btn">Sign In</button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+
+    <div id="auth-signup-form" style="display:none">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="signup-pass" placeholder="Choose a password (min 6 chars)" autocomplete="new-password"/>
+      </div>
+      <div class="auth-field">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-pass2" placeholder="Repeat password" autocomplete="new-password"/>
+      </div>
+      <button class="auth-submit" id="signup-btn">Create Account</button>
+      <div class="auth-error" id="signup-error"></div>
+    </div>
+
+    <div class="auth-note">Your chats are saved and synced to your account.</div>
+  </div>
+</div>
+
+<!-- ── APP ────────────────────────────────────────────────── -->
 <div class="overlay" id="overlay"></div>
 
 <aside class="sidebar" id="sidebar">
@@ -196,6 +329,11 @@ textarea::placeholder { color: var(--faint); }
     </button>
     <div class="chat-title" id="chat-title">New Chat</div>
     <div class="topbar-right">
+      <div class="user-pill" id="user-pill" style="display:none">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span class="user-email-text" id="user-email-text"></span>
+      </div>
+      <button class="btn-signout" id="signout-btn" style="display:none">Sign out</button>
       <button class="tb-btn" id="export-btn" title="Export">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -300,6 +438,180 @@ Rules:
 - When given a specific instruction about the PDF, follow it thoroughly.`;
 
   const $ = id => document.getElementById(id);
+
+  // ── AUTH STATE ────────────────────────────────────────────
+  let currentUser = null; // { email, uid }
+
+  // Simple in-memory "user DB" backed by window.storage (shared: false = per user isn't right,
+  // so we use a hashed key per email). We store: users registry + per-user chats.
+  const USERS_KEY  = "sputta:users";        // shared=false (each browser instance)
+  const chatKey = uid => `sputta:chats:${uid}`;
+
+  // Minimal hash for email → uid
+  function hashEmail(email) {
+    let h = 0;
+    for (let i = 0; i < email.length; i++) {
+      h = (Math.imul(31, h) + email.charCodeAt(i)) >>> 0;
+    }
+    return "u" + h.toString(36);
+  }
+
+  // ── STORAGE HELPERS ───────────────────────────────────────
+  async function storageGet(key) {
+    try {
+      const r = await window.storage.get(key);
+      return r ? JSON.parse(r.value) : null;
+    } catch (_) { return null; }
+  }
+  async function storageSet(key, val) {
+    try { await window.storage.set(key, JSON.stringify(val)); } catch (_) {}
+  }
+
+  // ── AUTH LOGIC ────────────────────────────────────────────
+  async function getUsers() {
+    return (await storageGet(USERS_KEY)) || {};
+  }
+  async function saveUsers(u) {
+    await storageSet(USERS_KEY, u);
+  }
+
+  async function doSignup(email, pass) {
+    email = email.trim().toLowerCase();
+    if (!email || !pass) throw new Error("Please fill in all fields.");
+    if (!email.includes("@")) throw new Error("Enter a valid email address.");
+    if (pass.length < 6) throw new Error("Password must be at least 6 characters.");
+
+    const users = await getUsers();
+    if (users[email]) throw new Error("An account with this email already exists.");
+
+    const uid = hashEmail(email);
+    // Simple hash for password — NOT cryptographic, but good enough for this demo
+    const passhash = btoa(unescape(encodeURIComponent(pass + "__sp__" + email)));
+    users[email] = { uid, passhash };
+    await saveUsers(users);
+    return { email, uid };
+  }
+
+  async function doLogin(email, pass) {
+    email = email.trim().toLowerCase();
+    if (!email || !pass) throw new Error("Please fill in all fields.");
+
+    const users = await getUsers();
+    const rec = users[email];
+    if (!rec) throw new Error("No account found with that email.");
+
+    const expected = btoa(unescape(encodeURIComponent(pass + "__sp__" + email)));
+    if (rec.passhash !== expected) throw new Error("Incorrect password.");
+
+    return { email, uid: rec.uid };
+  }
+
+  async function loadUserChats(uid) {
+    return (await storageGet(chatKey(uid))) || {};
+  }
+  async function saveUserChats(uid, chats) {
+    await storageSet(chatKey(uid), chats);
+  }
+
+  // ── AUTH UI ───────────────────────────────────────────────
+  const authScreen  = $("auth-screen");
+  const tabLogin    = $("tab-login");
+  const tabSignup   = $("tab-signup");
+  const loginForm   = $("auth-login-form");
+  const signupForm  = $("auth-signup-form");
+  const loginBtn    = $("login-btn");
+  const signupBtn   = $("signup-btn");
+  const loginError  = $("login-error");
+  const signupError = $("signup-error");
+  const userPill    = $("user-pill");
+  const userAvatar  = $("user-avatar");
+  const userEmailTx = $("user-email-text");
+  const signoutBtn  = $("signout-btn");
+
+  function showAuthError(el, msg) {
+    el.textContent = msg; el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 4000);
+  }
+
+  tabLogin.addEventListener("click", () => {
+    tabLogin.classList.add("active"); tabSignup.classList.remove("active");
+    loginForm.style.display = ""; signupForm.style.display = "none";
+    loginError.classList.remove("show"); signupError.classList.remove("show");
+  });
+  tabSignup.addEventListener("click", () => {
+    tabSignup.classList.add("active"); tabLogin.classList.remove("active");
+    signupForm.style.display = ""; loginForm.style.display = "none";
+    loginError.classList.remove("show"); signupError.classList.remove("show");
+  });
+
+  // Enter key on auth inputs
+  [$("login-email"), $("login-pass")].forEach(el => {
+    el.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn.click(); });
+  });
+  [$("signup-email"), $("signup-pass"), $("signup-pass2")].forEach(el => {
+    el.addEventListener("keydown", e => { if (e.key === "Enter") signupBtn.click(); });
+  });
+
+  loginBtn.addEventListener("click", async () => {
+    loginBtn.disabled = true;
+    loginError.classList.remove("show");
+    try {
+      const user = await doLogin($("login-email").value, $("login-pass").value);
+      await onAuthSuccess(user);
+    } catch (err) {
+      showAuthError(loginError, err.message);
+    } finally { loginBtn.disabled = false; }
+  });
+
+  signupBtn.addEventListener("click", async () => {
+    signupBtn.disabled = true;
+    signupError.classList.remove("show");
+    const p1 = $("signup-pass").value;
+    const p2 = $("signup-pass2").value;
+    if (p1 !== p2) { showAuthError(signupError, "Passwords do not match."); signupBtn.disabled = false; return; }
+    try {
+      const user = await doSignup($("signup-email").value, p1);
+      await onAuthSuccess(user);
+    } catch (err) {
+      showAuthError(signupError, err.message);
+    } finally { signupBtn.disabled = false; }
+  });
+
+  async function onAuthSuccess(user) {
+    currentUser = user;
+    // Show user in topbar
+    userAvatar.textContent = user.email[0].toUpperCase();
+    userEmailTx.textContent = user.email;
+    userPill.style.display = "flex";
+    signoutBtn.style.display = "inline-block";
+    // Hide auth screen
+    authScreen.style.opacity = "0";
+    authScreen.style.transition = "opacity 0.25s";
+    setTimeout(() => { authScreen.style.display = "none"; }, 250);
+    // Load chats
+    chats = await loadUserChats(user.uid);
+    const ids = Object.keys(chats).sort((a, b) => chats[b].ts - chats[a].ts);
+    if (ids.length) loadChat(ids[0]); else createChat();
+    toast("Welcome back, " + user.email.split("@")[0] + "!", true);
+  }
+
+  signoutBtn.addEventListener("click", () => {
+    if (!confirm("Sign out?")) return;
+    currentUser = null;
+    chats = {}; activeId = null;
+    userPill.style.display = "none";
+    signoutBtn.style.display = "none";
+    messagesEl.innerHTML = "";
+    historyList.innerHTML = "";
+    chatTitleEl.textContent = "New Chat";
+    authScreen.style.opacity = "1";
+    authScreen.style.display = "flex";
+    // Reset auth form
+    $("login-email").value = ""; $("login-pass").value = "";
+    tabLogin.click();
+  });
+
+  // ── CHAT ENGINE (original, adapted for per-user storage) ──
   const messagesEl   = $("messages");
   const msgInput     = $("msg-input");
   const sendBtn      = $("send-btn");
@@ -328,13 +640,15 @@ Rules:
   let isStreaming = false;
   let stopFlag    = false;
   let lightMode   = false;
+  let saveTimer   = null;
 
-  try { chats = JSON.parse(sessionStorage.getItem("sp_chats") || "{}"); } catch (_) {}
-  function save() { try { sessionStorage.setItem("sp_chats", JSON.stringify(chats)); } catch (_) {} }
+  function save() {
+    if (!currentUser) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveUserChats(currentUser.uid, chats), 600);
+  }
 
   bindAll();
-  const ids = Object.keys(chats).sort((a,b) => chats[b].ts - chats[a].ts);
-  if (ids.length) loadChat(ids[0]); else createChat();
 
   function bindAll() {
     sendBtn.addEventListener("click", handleSend);
@@ -348,7 +662,7 @@ Rules:
     newChatBtn.addEventListener("click", () => { createChat(); closeSidebar(); });
     clearAllBtn.addEventListener("click", () => {
       if(!confirm("Delete all chat history?")) return;
-      chats={}; try{sessionStorage.clear();}catch(_){} createChat(); closeSidebar();
+      chats={}; save(); createChat(); closeSidebar();
     });
     exportBtn.addEventListener("click", exportChat);
     themeBtn.addEventListener("click", toggleTheme);
@@ -439,7 +753,6 @@ Rules:
     sendBtn.disabled=true; stopBtn.style.display="inline-block"; retryBtn.style.display="none";
     showTyping();
 
-    // Build Cohere messages array
     const messages = [
       { role: "system", content: SYSTEM },
       ...chats[activeId].msgs.map(m => ({
@@ -463,15 +776,10 @@ Rules:
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
 
       removeTyping();
-
       const reply = data?.message?.content?.[0]?.text || "Sorry, I could not generate a response.";
-
       addBubble("ai", safe(marked.parse(reply)));
       chats[activeId].msgs.push({role:"assistant", content:reply});
       save();
@@ -587,7 +895,15 @@ Rules:
   function autosize() { msgInput.style.height="auto"; msgInput.style.height=Math.min(msgInput.scrollHeight,140)+"px"; }
   function safe(html) { return window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<script[\s\S]*?<\/script>/gi,""); }
   function esc(s) { const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
-  function toast(msg) { toastEl.textContent=msg; toastEl.classList.add("show"); setTimeout(()=>toastEl.classList.remove("show"),3200); }
+
+  let toastTimeout = null;
+  function toast(msg, success=false) {
+    toastEl.textContent=msg;
+    toastEl.classList.toggle("success", success);
+    toastEl.classList.add("show");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(()=>toastEl.classList.remove("show"),3200);
+  }
 
   function exportChat() {
     const chat=chats[activeId]; if(!chat) return;
@@ -613,4 +929,3 @@ Rules:
 </script>
 </body>
 </html>
-
