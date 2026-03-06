@@ -521,6 +521,7 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
     showUserUI(user);
+    requestNotificationPermission();
     await loadChatsFromFirestore();
     const ids = Object.keys(chats).sort((a,b) => chats[b].ts - chats[a].ts);
     if (ids.length) loadChat(ids[0]); else createChat();
@@ -772,6 +773,9 @@ async function getResponse() {
     removeTyping();
     const reply=data?.message?.content?.[0]?.text||"Sorry, I could not generate a response.";
     addBubble("ai", safe(marked.parse(reply)));
+    if (document.hidden) {
+  sendNotification("PDF sPutta", "Your explanation is ready!");
+}
     chats[activeId].msgs.push({role:"assistant", content:reply});
     scheduleSave(activeId);
   } catch(err){
@@ -902,6 +906,24 @@ function toast(msg, ok=false) {
   toastEl.textContent=msg; toastEl.classList.toggle("ok",ok); toastEl.classList.add("show");
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove("show"),3200);
 }
+function requestNotificationPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function sendNotification(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  const n = new Notification(title, {
+    body: body,
+    icon: "icon-512.png",
+    badge: "icon-192.png",
+    vibrate: [200, 100, 200]
+  });
+  setTimeout(() => n.close(), 5000);
+}
 function exportChat() {
   const chat=chats[activeId]; if(!chat) return;
   const a=document.createElement("a");
@@ -930,6 +952,7 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
 
 
 
