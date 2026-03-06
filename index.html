@@ -15,6 +15,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
 <style>
 :root {
   --bg:        #0e0e0d;
@@ -387,7 +389,7 @@ textarea::placeholder { color: var(--faint); }
               <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
           </button>
-          <input type="file" id="file-input" accept=".pdf" style="display:none"/>
+          <input type="file" id="file-input" accept=".pdf,.pptx,.docx,.txt,image/png,image/jpeg" style="display:none"/>
           <button class="send-btn" id="send-btn">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -683,7 +685,7 @@ function bindAll() {
   document.addEventListener("drop", e => {
     e.preventDefault();
     const f=e.dataTransfer?.files?.[0];
-    if(f?.type==="application/pdf") handleFile(f); else if(f) toast("Only PDF files are supported.");
+    if(f) handleFile(f);
   });
 }
 
@@ -870,7 +872,7 @@ function renderIntro() {
   dz.addEventListener("drop",e=>{
     e.preventDefault(); dz.classList.remove("drag-over");
     const f=e.dataTransfer?.files?.[0];
-    if(f?.type==="application/pdf") handleFile(f); else toast("Only PDF files are supported.");
+    if(f) handleFile(f);
   });
   wrap.querySelectorAll(".chip").forEach(c=>{
     c.addEventListener("click",()=>{msgInput.value=c.textContent;msgInput.focus();autosize();});
@@ -928,4 +930,5 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
 
