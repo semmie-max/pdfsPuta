@@ -262,6 +262,17 @@ textarea::placeholder { color: var(--faint); }
   .topbar { padding: 0 14px; } .chips-row { gap: 6px; } .chip { font-size: 12px; padding: 7px 13px; }
   .drop-zone { padding: 28px 16px; } .auth-card { padding: 32px 24px 28px; }
 }
+.search-box {
+  display: none; padding: 10px 12px; border-bottom: 1px solid var(--border);
+}
+.search-box.show { display: block; }
+.search-input {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border2);
+  border-radius: 8px; padding: 8px 12px; color: var(--text);
+  font-family: var(--ff-body); font-size: 13px; outline: none; transition: border-color 0.18s;
+}
+.search-input:focus { border-color: var(--green); }
+.search-input::placeholder { color: var(--faint); }
 </style>
 </head>
 <body>
@@ -327,7 +338,12 @@ textarea::placeholder { color: var(--faint); }
   <div class="sidebar-btns">
     <button class="btn-new" id="new-chat">New Chat</button>
     <button class="btn-clear" id="clear-all">Clear All</button>
+    <button class="btn-clear" id="search-btn">Search</button>
   </div>
+  
+  <div class="search-box" id="search-box">
+  <input class="search-input" id="search-input" placeholder="Search chats..."/>
+</div>
   <div class="history-label">History</div>
   <div class="history-list" id="history-list"></div>
 </aside>
@@ -948,6 +964,40 @@ function toggleTheme() {
     ["--bg","--surface","--surface2","--border","--border2","--text","--muted","--faint","--green","--green-dim"].forEach(v=>r.removeProperty(v));
   }
 }
+
+
+// ── Chat Search ───────────────────────────────────────────
+const searchBtn   = document.getElementById("search-btn");
+const searchBox   = document.getElementById("search-box");
+const searchInput = document.getElementById("search-input");
+
+searchBtn.addEventListener("click", () => {
+  searchBox.classList.toggle("show");
+  if (searchBox.classList.contains("show")) {
+    searchInput.focus();
+  } else {
+    searchInput.value = "";
+    renderSidebar();
+  }
+});
+
+searchInput.addEventListener("input", () => {
+  const query = searchInput.value.trim().toLowerCase();
+  historyList.innerHTML = "";
+  Object.keys(chats)
+    .sort((a, b) => chats[b].ts - chats[a].ts)
+    .filter(id => chats[id].title.toLowerCase().includes(query))
+    .forEach(id => {
+      const el = document.createElement("div");
+      el.className = "history-item" + (id === activeId ? " active" : "");
+      const title = document.createElement("span");
+      title.className = "history-item-title";
+      title.textContent = chats[id].title;
+      el.appendChild(title);
+      el.addEventListener("click", () => { loadChat(id); closeSidebar(); });
+      historyList.appendChild(el);
+    });
+});
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -958,6 +1008,7 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
 
 
 
