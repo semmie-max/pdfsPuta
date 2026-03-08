@@ -273,6 +273,11 @@ textarea::placeholder { color: var(--faint); }
 }
 .search-input:focus { border-color: var(--green); }
 .search-input::placeholder { color: var(--faint); }
+
+.history-item-time {
+  font-size: 10px; color: var(--faint); margin-top: 2px; white-space: nowrap;
+}
+.history-item-inner { flex: 1; overflow: hidden; }
 </style>
 </head>
 <body>
@@ -836,11 +841,21 @@ function renderSidebar() {
     const el=document.createElement("div");
     el.className="history-item"+(id===activeId?" active":"");
 
-    const title=document.createElement("span");
-    title.className="history-item-title";
-    title.textContent=chats[id].title;
+    const inner = document.createElement("div");
+inner.className = "history-item-inner";
 
-    const del=document.createElement("button");
+const title = document.createElement("span");
+title.className = "history-item-title";
+title.textContent = chats[id].title;
+
+const time = document.createElement("div");
+time.className = "history-item-time";
+time.textContent = formatChatTime(chats[id].ts);
+
+inner.appendChild(title);
+inner.appendChild(time);
+
+const del = document.createElement("button");
     del.className="history-delete"; del.textContent="✕"; del.title="Delete chat";
     del.addEventListener("click", async e => {
       e.stopPropagation();
@@ -851,7 +866,7 @@ function renderSidebar() {
       } else renderSidebar();
     });
 
-    el.appendChild(title); el.appendChild(del);
+    el.appendChild(inner); el.appendChild(del);
     el.addEventListener("click", ()=>{ loadChat(id); closeSidebar(); });
     historyList.appendChild(el);
   });
@@ -998,6 +1013,20 @@ searchInput.addEventListener("input", () => {
       historyList.appendChild(el);
     });
 });
+
+
+function formatChatTime(ts) {
+  const date = new Date(ts);
+  const now  = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (isToday)     return `Today ${time}`;
+  if (isYesterday) return `Yesterday ${time}`;
+  return date.toLocaleDateString([], { day: "numeric", month: "short" }) + " " + time;
+}
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -1008,6 +1037,7 @@ searchInput.addEventListener("input", () => {
 </script>
 </body>
 </html>
+
 
 
 
