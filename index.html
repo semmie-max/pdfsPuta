@@ -916,13 +916,19 @@ function requestNotificationPermission() {
 function sendNotification(title, body) {
   if (!("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
-  const n = new Notification(title, {
-    body: body,
-    icon: "icon-512.png",
-    badge: "icon-192.png",
-    vibrate: [200, 100, 200]
-  });
-  setTimeout(() => n.close(), 5000);
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body: body,
+        icon: "icon-512.png",
+        badge: "icon-192.png",
+        vibrate: [200, 100, 200]
+      });
+    });
+  } else {
+    const n = new Notification(title, { body, icon: "icon-512.png" });
+    setTimeout(() => n.close(), 5000);
+  }
 }
 function exportChat() {
   const chat=chats[activeId]; if(!chat) return;
@@ -952,6 +958,7 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
 
 
 
