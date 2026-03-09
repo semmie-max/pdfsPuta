@@ -297,6 +297,15 @@ textarea::placeholder { color: var(--faint); }
   font-size: 10.5px; color: var(--faint); margin-top: 6px;
   display: flex; align-items: center; gap: 4px;
 }
+
+.mic-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border2);
+  background: none; color: var(--muted); display: flex; align-items: center;
+  justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+}
+.mic-btn:hover { border-color: rgba(168,204,90,0.4); color: var(--green); background: var(--green-dim); }
+.mic-btn.recording { background: rgba(204,90,90,0.15); border-color: var(--red); color: var(--red); animation: micpulse 1s infinite; }
+@keyframes micpulse { 0%,100% { box-shadow: 0 0 0 0 rgba(204,90,90,0.4); } 50% { box-shadow: 0 0 0 6px rgba(204,90,90,0); } }
 </style>
 </head>
 <body>
@@ -434,6 +443,14 @@ textarea::placeholder { color: var(--faint); }
             </svg>
           </button>
           <input type="file" id="file-input" accept=".pdf,.pptx,.docx,.txt,image/png,image/jpeg" style="display:none"/>
+          <button class="mic-btn" id="mic-btn" title="Voice input">
+  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>
+</button>
           <button class="send-btn" id="send-btn">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -1076,9 +1093,65 @@ window.addEventListener("offline", updateNetwork);
       navigator.serviceWorker.register('sw.js');
     });
   }
+  // ── Voice Input ───────────────────────────────────────────
+const micBtn = document.getElementById("mic-btn");
+let recognition = null;
+let isRecording = false;
+
+if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = "en-NG";
+
+  recognition.onstart = () => {
+    isRecording = true;
+    micBtn.classList.add("recording");
+    msgInput.placeholder = "Listening...";
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript)
+      .join("");
+    msgInput.value = transcript;
+    autosize();
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    micBtn.classList.remove("recording");
+    msgInput.placeholder = "Ask anything, or attach a file...";
+    if (msgInput.value.trim()) handleSend();
+  };
+
+  recognition.onerror = (e) => {
+    isRecording = false;
+    micBtn.classList.remove("recording");
+    msgInput.placeholder = "Ask anything, or attach a file...";
+    if (e.error === "not-allowed") {
+      toast("Microphone permission denied. Please allow it in your browser settings.");
+    }
+  };
+
+  micBtn.addEventListener("click", () => {
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  });
+
+} else {
+  micBtn.addEventListener("click", () => {
+    toast("Voice input is not supported on this browser. Try Chrome.");
+  });
+}
 </script>
 </body>
 </html>
+
 
 
 
