@@ -927,13 +927,12 @@ function renderSidebar() {
   const pinned   = allIds.filter(id => chats[id].pinned);
   const unpinned = allIds.filter(id => !chats[id].pinned);
 
-  if (pinned.length) {
+ if (pinned.length) {
     const pinnedLabel = document.createElement("div");
     pinnedLabel.className = "pinned-label";
-    pinnedLabel.textContent = "📌 Pinned";
+    pinnedLabel.innerHTML = `<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg> Pinned`;
     historyList.appendChild(pinnedLabel);
     pinned.forEach(id => historyList.appendChild(makeChatItem(id)));
-
     const divider = document.createElement("div");
     divider.className = "pin-divider";
     historyList.appendChild(divider);
@@ -1229,6 +1228,7 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
 </script>
 </body>
 </html>
+
 
 
 
