@@ -456,7 +456,7 @@ textarea::placeholder { color: var(--faint); }
               <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
           </button>
-          <input type="file" id="file-input" accept=".pdf,.pptx,.docx,.txt,image/png,image/jpeg" style="display:none"/>
+          <input type="file" id="file-input" accept="*/*" style="display:none"/>
           <button class="mic-btn" id="mic-btn" title="Voice input">
   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -776,7 +776,7 @@ function handleFile(file) {
   const isIMG  = file.type.startsWith("image/");
 
   if (!isPDF && !isPPTX && !isDOCX && !isTXT && !isIMG) {
-    toast("Supported files: PDF, PPTX, DOCX, TXT, JPG, PNG.");
+    toast("Unsupported file type. Try PDF, PPTX, DOCX, TXT or an image.");
     return;
   }
 
@@ -794,6 +794,17 @@ function handleFile(file) {
 function clearFile() { pendingFile=null; pendingStrip.classList.remove("show"); }
 
 async function extractText(file) {
+  const name = file.name.toLowerCase();
+  if (file.type === "application/pdf" || name.endsWith(".pdf")) return extractPDF(file);
+  if (name.endsWith(".pptx")) return extractPPTX(file);
+  if (name.endsWith(".docx")) return extractDOCX(file);
+  if (name.endsWith(".txt") || file.type === "text/plain") return extractTXT(file);
+  if (file.type.startsWith("image/")) return extractImage(file);
+  if (file.type.startsWith("text/")) return extractTXT(file);
+  throw new Error("This file type cannot be read. Try PDF, PPTX, DOCX, TXT or an image.");
+}
+
+async function extractPDF(file) {
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   let out="";
@@ -808,6 +819,59 @@ async function extractText(file) {
   return out;
 }
 
+async function extractPPTX(file) {
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const slideFiles = Object.keys(zip.files)
+    .filter(name => name.match(/^ppt\/slides\/slide[0-9]+\.xml$/))
+    .sort((a, b) => {
+      const na = parseInt(a.match(/slide(\d+)/)[1]);
+      const nb = parseInt(b.match(/slide(\d+)/)[1]);
+      return na - nb;
+    });
+  if (!slideFiles.length) throw new Error("No slides found in this PowerPoint file.");
+  let out = "";
+  for (const slideName of slideFiles.slice(0, 40)) {
+    const xml = await zip.files[slideName].async("string");
+    const texts = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+    const slideText = texts.map(t => t.replace(/<[^>]+>/g, "")).join(" ");
+    if (slideText.trim()) out += slideText + "\n";
+  }
+  if (!out.trim()) throw new Error("No readable text found in this PowerPoint file.");
+  if (out.length > 15000) out = out.slice(0, 15000) + "\n\n[Document truncated.]";
+  return out;
+}
+
+async function extractDOCX(file) {
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const xmlFile = zip.files["word/document.xml"];
+  if (!xmlFile) throw new Error("Could not read this Word document.");
+  const xml = await xmlFile.async("string");
+  const texts = xml.match(/<w:t[^>]*>([^<]+)<\/w:t>/g) || [];
+  let out = texts.map(t => t.replace(/<[^>]+>/g, "")).join(" ");
+  if (!out.trim()) throw new Error("No readable text found in this Word document.");
+  if (out.length > 15000) out = out.slice(0, 15000) + "\n\n[Document truncated.]";
+  return out;
+}
+
+async function extractTXT(file) {
+  let out = await file.text();
+  if (!out.trim()) throw new Error("This text file appears to be empty.");
+  if (out.length > 15000) out = out.slice(0, 15000) + "\n\n[Document truncated.]";
+  return out;
+}
+
+async function extractImage(file) {
+  toast("Reading image... this may take a moment.");
+  const { data: { text } } = await Tesseract.recognize(file, "eng", {
+    logger: () => {}
+  });
+  if (!text.trim()) throw new Error("No readable text found in this image.");
+  let out = text;
+  if (out.length > 15000) out = out.slice(0, 15000) + "\n\n[Document truncated.]";
+  return out;
+}
 async function handleSend() {
   if(isStreaming) return;
   const text=msgInput.value.trim();
@@ -1228,6 +1292,7 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
 </script>
 </body>
 </html>
+
 
 
 
