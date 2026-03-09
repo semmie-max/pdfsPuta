@@ -795,11 +795,16 @@ function clearFile() { pendingFile=null; pendingStrip.classList.remove("show"); 
 
 async function extractText(file) {
   const name = file.name.toLowerCase();
+  const isImage = file.type.startsWith("image/") || 
+    name.endsWith(".jpg") || name.endsWith(".jpeg") || 
+    name.endsWith(".png") || name.endsWith(".gif") || 
+    name.endsWith(".webp") || name.endsWith(".bmp");
+
   if (file.type === "application/pdf" || name.endsWith(".pdf")) return extractPDF(file);
   if (name.endsWith(".pptx")) return extractPPTX(file);
   if (name.endsWith(".docx")) return extractDOCX(file);
   if (name.endsWith(".txt") || file.type === "text/plain") return extractTXT(file);
-  if (file.type.startsWith("image/")) return extractImage(file);
+  if (isImage) return extractImage(file);
   if (file.type.startsWith("text/")) return extractTXT(file);
   throw new Error("This file type cannot be read. Try PDF, PPTX, DOCX, TXT or an image.");
 }
@@ -1292,6 +1297,7 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
 </script>
 </body>
 </html>
+
 
 
 
