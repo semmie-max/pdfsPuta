@@ -960,7 +960,6 @@ function makeChatItem(id) {
   el.appendChild(pin);
   el.appendChild(del);
   el.addEventListener("click", () => { loadChat(id); closeSidebar(); });
-  historyList.appendChild(el);
   return el;
 }
 function renderIntro() {
@@ -1200,6 +1199,7 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
 </script>
 </body>
 </html>
+
 
 
 
