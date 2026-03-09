@@ -1,4 +1,4 @@
-const CACHE = "sputta-v18";
+const CACHE = "sputta-v19";
 const ASSETS = [
   "/",
   "/index.html",
